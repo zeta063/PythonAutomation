@@ -1,0 +1,49 @@
+import time
+
+# Dictionary to store user login attempts and timestamps
+failed_login_attempts = {}
+
+# Define constants for the maximum allowed attempts and the lockout duration
+MAX_LOGIN_ATTEMPTS = 15
+LOCKOUT_DURATION_SECONDS = 1800  # 30 minutes
+
+def log_failed_login(username):
+    current_time = time.time()
+    if username in failed_login_attempts:
+        attempts, last_attempt_time = failed_login_attempts[username]
+        # Check if the lockout duration has passed
+        if current_time - last_attempt_time >= LOCKOUT_DURATION_SECONDS:
+            failed_login_attempts[username] = (1, current_time)
+        else:
+            failed_login_attempts[username] = (attempts + 1, current_time)
+    else:
+        failed_login_attempts[username] = (1, current_time)
+
+def is_account_locked(username):
+    if username in failed_login_attempts:
+        attempts, last_attempt_time = failed_login_attempts[username]
+        current_time = time.time()
+        if attempts >= MAX_LOGIN_ATTEMPTS and current_time - last_attempt_time < LOCKOUT_DURATION_SECONDS:
+            return True
+    return False
+
+def main():
+    username = input("Enter your username: ")
+    if is_account_locked(username):
+        print("Your account is locked due to too many failed login attempts.")
+        return
+
+    password = input("Enter your password: ")
+
+    # Check the password (you can replace this with your authentication logic)
+    if password == "your_password":
+        print("Login successful.")
+        # Clear the login attempts for the user upon successful login
+        if username in failed_login_attempts:
+            del failed_login_attempts[username]
+    else:
+        log_failed_login(username)
+        print("Login failed. Please try again.")
+
+if __name__ == "__main__":
+    main()
